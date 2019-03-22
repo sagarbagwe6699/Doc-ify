@@ -1,0 +1,7 @@
+Output:
+=======
+
+Student@Student:~/Desktop/60004170098$
+./sample  
+Hello World
+Lucifer

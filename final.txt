@@ -1,0 +1,15 @@
+Code:  
+=====  
+  
+a="Hello"  
+b="World"  
+print(a+" "+ b+"\n"+"Lucifer")  
+  
+  
+Output:  
+=======  
+  
+Student@Student:~/Desktop/60004170098$  
+./sample    
+Hello World  
+Lucifer  
