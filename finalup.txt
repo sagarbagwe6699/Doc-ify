@@ -9,7 +9,6 @@ print(a+" "+ b+"\n"+"Lucifer")
 Output:
 =======
 
-Student@Student:~/Desktop/60004170098$
-./sample  
+Student@Student:~/Desktop/60004170085$  ./sample.py
 Hello World
 Lucifer
