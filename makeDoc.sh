@@ -28,15 +28,29 @@
 #
 # ------------------------
 #
+echo  "Select file type :"
+echo
+echo "1 ---- Python" 
+echo "2 ---- C"
+read fType
 echo Enter SAP ID :
 read sapId
-terminalString="Student@Student:~/Desktop/$sapId$ "
+terminalStringtemp="Student@Student:~/Desktop/$sapId$ "
 #
+if [ $fType == 1 ];then
 # Make a text file of output
+terminalString="$terminalStringtemp ./sample.py"
 python3 ./sample.py>output.txt
 #
 # Make a text file of code
 echo "$(cat ./sample.py)">code.txt
+elif [ $fType == 2 ];then
+gcc ./sample.c
+terminalString="$terminalStringtemp ./a.out"
+./a.out>output.txt
+echo "$(cat ./sample.c)">codetemp.txt
+sed 's/^#/ #/' codetemp.txt > code.txt
+fi
 #
 # Remove these two files if they already exist
 #
@@ -65,10 +79,10 @@ echo "">>finalup.txt
 cat Footer.txt>>finaldown.txt
 #
 # Append terminalString to finaldown
-echo $terminalString>>finaldown.txt
+echo "$terminalString">>finaldown.txt
 #
 # Append progPath to finaldown
-cat progPath.txt>>finaldown.txt
+# cat progPath.txt>>finaldown.txt
 #
 # Append output to finaldown
 cat output.txt>>finaldown.txt
@@ -85,18 +99,13 @@ sed 's/$/  /' finalup.txt > final.txt
 # Converting the final text file to docx
 pandoc -o OP.docx final.txt
 #
+tput bold echo
+tput setaf 2; echo "----------------------------------------"
+tput setaf 2; echo "File successfully created ----> OP.docx"
+tput setaf 2; echo "----------------------------------------"
 echo
-echo "----------------------------------------"
-echo "File successfully created ----> OP.docx"
-echo "----------------------------------------"
-echo
-pandoc OP.docx -o OP.pdf
-echo
-echo "----------------------------------------"
-echo "File successfully created ----> OP.pdf"
-echo "----------------------------------------"
-echo
-
+# kdialog --title "File created successfully" --passivepopup \
+# "Output saved in OP.docx" 10
 #
 #
 #
