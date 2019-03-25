@@ -107,13 +107,106 @@ else
 kdialog --title "Operation Unsuccessfull" --error "Word Document could not be created"
 fi
 
-kdialog --title "Doc-ify" --yesno "Do you want to upload your document to google drive?"
+kdialog --title "Doc-ify" --yesno "Do you want to create multiple files ?"
 if [ $? == 0 ];then
-    filePath=`kdialog --getopenfilename . '*.*'`
-    filename=$(basename "$filePath")
-    if [ $? == 0 ];then
-        cd $sapId
-        gdrive upload $filename  #for uploading a folder, use gdrive --recursive <folderName>
+starting=`kdialog --title "Doc-ify" --inputbox "Enter starting SAP ID :"`
+if [ $? != 0 ];then
+kdialog --error "Program terminated"
+exit
+fi
+ending=`kdialog --title "Doc-ify" --inputbox "Enter ending SAP ID :"`
+if [ $? != 0 ];then
+kdialog --error "Program terminated"
+exit
+fi
+max=$ending
+mkdir outputs
+if [ $?==0 ];then
+echo "----"
+else
+echo "----"
+fi
+for i in `seq $starting $max`
+do
+  echo "$i"
+
+    terminalString="Student@Student:~/Desktop/$i$ "
+#
+# Make a text file of output
+    python3 $fPath>output.txt
+#
+# Make a text file of code
+    echo "$(cat $fPath)">code.txt
+#
+# Remove these two files if they already exist
+#
+# Planning to add a if condition
+    rm finalup.txt
+    rm finaldown.txt
+#
+# Make two text files to create the upper(Code) and lower(Output) part of the final file
+#
+# These are temporary files
+#
+    touch finalup.txt
+    touch finaldown.txt
+#
+# Append header to finalup
+    cat header.txt>>finalup.txt
+#
+# Append code to finalup
+    cat code.txt>>finalup.txt
+#
+# Append newline
+    echo "">>finalup.txt
+    echo "">>finalup.txt
+#
+# Append Footer to finaldown
+    cat Footer.txt>>finaldown.txt
+#
+# Append terminalString to finaldown
+    echo $terminalString>>finaldown.txt
+#
+# Append progPath to finaldown
+    cat progPath.txt>>finaldown.txt
+#
+# Append output to finaldown
+    cat output.txt>>finaldown.txt
+#
+# Append header to finalup
+    cat finaldown.txt>>finalup.txt
+#
+# Adding two spaces at the end of each line
+#
+# This acts as newline for markdown
+#
+    sed 's/$/  /' finalup.txt > final.txt
+    mkdir ./outputs/$i
+    if [ $?==0 ];then
+
+#
+# Converting the final text file to docx
+    pandoc -o ./outputs/$i/OP$i.docx final.txt
+    else 
+    echo "----"
     fi
+#
+   # pandoc OP.docx -o OP$i.pdf
+done
+else
+./gui.sh
 fi
 
+zip outputData.zip ./outputs/*/*
+gdrive upload outputData.zip
+
+
+# kdialog --title "Doc-ify" --yesno "Do you want to upload your document to google drive?"
+# if [ $? == 0 ];then
+#     filePath=`kdialog --getopenfilename . '*.*'`
+#     filename=$(basename "$filePath")
+#     if [ $? == 0 ];then
+#         cd $sapId
+#         gdrive upload $filename  #for uploading a folder, use gdrive --recursive <folderName>
+#     fi
+# fi
