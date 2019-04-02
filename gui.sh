@@ -34,6 +34,7 @@ exit
 fi
 #
 #
+BASENAME=""
 #
 #
 sapId=`kdialog --title "SAP ID" --inputbox "Enter SAP ID :"`
@@ -42,7 +43,7 @@ kdialog --error "Program terminated"
 exit
 fi
 terminalStringtemp="Student@Student:~/Desktop/$sapId$ "
-fType=`kdialog --title "Select file type" --combobox "Select programming language :" "Python" "C/C++"`
+fType=`kdialog --title "Select file type" --combobox "Select programming language :" "Python" "C/C++" "ShellScript" `
 if [ $? != 0 ];then
 kdialog --error "Program terminated"
 exit
@@ -50,16 +51,33 @@ fi
 #
 if [ $fType == "Python" ];then
 fPath=`kdialog --getopenfilename . '*.py'`
+baseName=$(basename $fPath)
+BASENAME="$baseName"
 if [ $? != 0 ];then
 kdialog --error "Program terminated"
 exit
 fi
-terminalString="$terminalStringtemp ./sample.py"
-python3 ./sample.py>output.txt
+terminalString="$terminalStringtemp $baseName"
+python3 $fPath>output.txt
 echo "$(cat $fPath)">code.txt
+#
+elif [ $fType == "ShellScript" ];then
+fPath=`kdialog --getopenfilename . '*.sh'`
+baseName=$(basename $fPath)
+BASENAME="$baseName"
+if [ $? != 0 ];then
+kdialog --error "Program terminated"
+exit
+fi
+terminalString="$terminalStringtemp $baseName"
+$fPath>output.txt
+echo "$(cat $fPath)">codetemp.txt
+sed 's/^#/ #/' codetemp.txt > code.txt
 #
 elif [ $fType == "C/C++" ];then
 fPath=`kdialog --getopenfilename . '*.c'`
+baseName=$(basename $fPath)
+BASENAME="$baseName"
 if [ $? != 0 ];then
 kdialog --error "Program terminated"
 exit
@@ -69,6 +87,9 @@ terminalString="$terminalStringtemp ./a.out"
 ./a.out>output.txt
 echo "$(cat $fPath)">codetemp.txt
 sed 's/^#/ #/' codetemp.txt > code.txt
+else
+kdialog --error "Program terminated"
+exit
 fi
 #
 #
@@ -128,19 +149,37 @@ echo "----"
 fi
 for i in `seq $starting $max`
 do
-  echo "$i"
+  echo
+  echo "--------------------------------"
+  echo
+  echo "Sap Id :$i"
+  echo "File type :$fType"
+  echo "File name :$BASENAME"
 
-    terminalString="Student@Student:~/Desktop/$i$ "
+    echo "setting up terminalString...."
+    terminalString="Student@Student:~/Desktop/$i$ $BASENAME "
+
+    echo "checking for fileType...."
+    if [ $fType == "Python" ];then
+    echo Identified fileType: Python
 #
 # Make a text file of output
     python3 $fPath>output.txt
 #
 # Make a text file of code
     echo "$(cat $fPath)">code.txt
+
+    elif [ fType == "C/C++" ];then
+    echo Identified fileType: C/C++
+    gcc $fPath
+    ./a.out>output.txt
+    echo "$(cat $fPath)">code.txt
+    fi
 #
 # Remove these two files if they already exist
 #
 # Planning to add a if condition
+echo Removing old files....
     rm finalup.txt
     rm finaldown.txt
 #
@@ -148,35 +187,36 @@ do
 #
 # These are temporary files
 #
+echo Creating new files....
     touch finalup.txt
     touch finaldown.txt
 #
-# Append header to finalup
+echo Append header to finalup....
     cat header.txt>>finalup.txt
 #
-# Append code to finalup
+echo Append code to finalup....
     cat code.txt>>finalup.txt
 #
-# Append newline
+echo Append newline....
     echo "">>finalup.txt
     echo "">>finalup.txt
 #
-# Append Footer to finaldown
+echo Append Footer to finaldown....
     cat Footer.txt>>finaldown.txt
 #
-# Append terminalString to finaldown
+echo Append terminalString to finaldown....
     echo $terminalString>>finaldown.txt
 #
-# Append progPath to finaldown
-    cat progPath.txt>>finaldown.txt
+# echo Append progPath to finaldown....
+#     cat output.txt>>finaldown.txt
 #
-# Append output to finaldown
+echo Append output to finaldown....
     cat output.txt>>finaldown.txt
 #
-# Append header to finalup
+echo Append header to finalup....
     cat finaldown.txt>>finalup.txt
 #
-# Adding two spaces at the end of each line
+echo Adding two spaces at the end of each line....
 #
 # This acts as newline for markdown
 #
@@ -185,7 +225,7 @@ do
     if [ $?==0 ];then
 
 #
-# Converting the final text file to docx
+echo Converting the final text file to docx....
     pandoc -o ./outputs/$i/OP$i.docx final.txt
     else 
     echo "----"
@@ -193,12 +233,31 @@ do
 #
    # pandoc OP.docx -o OP$i.pdf
 done
-else
-./gui.sh
+
+zipName=`kdialog --title "Doc-ify" --inputbox "Enter the name of the zip file :"`
+if [ $? != 0 ];then
+kdialog --error "Program terminated"
+exit
+elif [ $? == " " ];then
+zipName= echo "$(date +%H:%M:%S_%d/%m/%y)"
 fi
 
-zip outputData.zip ./outputs/*/*
-gdrive upload outputData.zip
+zip $zipName.zip ./outputs/*/*
+gdrive upload $zipName.zip
+rm -d -r ./outputs
+rm a.out
+rm code.txt
+rm codetemp.txt
+rm final.txt
+rm finalup.txt
+rm finaldown.txt
+rm output.txt
+
+else
+clear
+echo Done
+fi
+
 
 
 # kdialog --title "Doc-ify" --yesno "Do you want to upload your document to google drive?"
